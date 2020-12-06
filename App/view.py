@@ -23,8 +23,6 @@
  * Dario Correal
  *
  """
-
-
 import sys
 import config
 from App import controller
@@ -42,12 +40,66 @@ operación seleccionada.
 # ___________________________________________________
 #  Variables
 # ___________________________________________________
-
+initialStation = None
+recursionLimit = 2000
 
 # ___________________________________________________
 #  Menu principal
 # ___________________________________________________
 
+
+def printMenu():
+    print("\n")
+    print("*******************************************")
+    print("Bienvenido")
+    print("1- Inicializar Analizador")
+    print("2- Cargar información de buses de singapur")
+    print("3- Primer requerimiento ")
+    print("4- Segundo requerimiento")
+    print("0- Salir")
+    print("*******************************************")
+
+
 """
 Menu principal
 """
+while True:
+    printMenu()
+    inputs = input('Seleccione una opción para continuar\n>')
+
+    if int(inputs[0]) == 1:
+        print("\nInicializando....")
+        # cont es el controlador que se usará de acá en adelante
+        cont = controller.init()
+
+    elif int(inputs[0]) == 2:
+        print("\nCargando información....")
+        controller.loadTrips(cont)
+        executiontime = timeit.timeit(number=1)
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 3:
+        number_companies = input("Ingrese el numero de compañias ")
+        value_1 = controller.primer_requerimiento(
+            cont, number_companies)
+        executiontime = timeit.timeit(number=1)
+        print("Los resultados son los siguientes " + str(value_1))
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 4:
+        number_taxis = input("Ingrese el de taxis ")
+        date = input("Ingrese la fecha ")
+        value_2 = controller.segunda_consulta(cont, number_taxis, date)
+        executiontime = timeit.timeit(number=1)
+        print("La información es la siguiente: " + str(value_2))
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 5:
+        value_3 = controller.tercera_consulta(cont)
+        executiontime = timeit.timeit(number=1)
+        print("La información es la siguiente: " + str(value_3))
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    else:
+        sys.exit(0)
+sys.exit(0)

@@ -41,11 +41,70 @@ recae sobre el controlador.
 # ___________________________________________________
 
 
+def init():
+    """
+    Llama la funcion de inicializacion  del modelo.
+    """
+    # analyzer es utilizado para interactuar con el modelo
+    analyzer = model.newAnalyzer()
+    return analyzer
+
+
 # ___________________________________________________
 #  Funciones para la carga de datos y almacenamiento
 #  de datos en los modelos
 # ___________________________________________________
 
+def loadFile(analyzer, tripfile):
+    tripfile = cf.data_dir + tripfile
+    input_file = csv.DictReader(open(tripfile, encoding="utf-8"),
+                                delimiter=",")
+    for trip in input_file:
+        model.addTrip(analyzer, trip)
+    return analyzer
+
+
+def loadTrips(analyzer):
+    for filename in cf.os.listdir(cf.data_dir):
+        if filename.endswith('.csv'):
+            print('Cargando archivo: ' + filename)
+            loadFile(analyzer, filename)
+    return analyzer
+
+
 # ___________________________________________________
 #  Funciones para consultas
 # ___________________________________________________
+
+
+def totalStops(analyzer):
+    """
+    Total de paradas de autobus
+    """
+    return model.totalStops(analyzer)
+
+
+def totalConnections(analyzer):
+    """
+    Total de enlaces entre las paradas
+    """
+    return model.totalConnections(analyzer)
+
+
+def connectedComponents(analyzer, id1, id2):
+    """
+    Numero de componentes fuertemente conectados
+    """
+    return model.connectedComponents(analyzer, id1, id2)
+
+
+def primer_requerimiento(analyzer, number_companies):
+    return model.primer_requerimiento(analyzer, number_companies)
+
+
+def segundo_requerimiento(analyzer, number_taxis, date):
+    return model.segundo_requerimiento(analyzer, number_taxis, date)
+
+
+def cuarta_consulta(analyzer, time, id1):
+    return model.cuarta_consulta(analyzer, time, id1)
