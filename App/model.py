@@ -29,7 +29,7 @@ from DISClib.ADT.graph import gr
 from DISClib.Algorithms.Graphs import dfs as d
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import orderedmap as om
-from DISClib.ADT import stack as st
+from DISClib.ADT import minpq as mi
 from DISClib.ADT import map as m
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
@@ -77,13 +77,10 @@ def newAnalyzer():
         chicago['values'] = m.newMap(numelements=30,
                                      maptype='PROBING',
                                      comparefunction=compareroutes)
-        # chicago['values'] = lt.newList('SINGLE_LINKED', compareIds)
+
         chicago['date'] = om.newMap(omaptype='RBT',
                                     comparefunction=compareroutes)
-        # chicago['graph'] = gr.newGraph(datastructure='ADJ_LIST',
-        #                              directed=True,
-        #                             size=1000,
-        #                            comparefunction=compareStopIds)
+
         return chicago
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -97,57 +94,6 @@ def addTrip(chicago, trip):
     total_dinero = trip["fare"]
     total_millas = trip["trip_miles"]
     add_companies(chicago, company, taxi, viaje)
-
-
-def add_companies(chicago, company, taxi, viaje):
-    present_taxi = m.contains(chicago['values_2'], taxi)
-    if present_taxi == False:
-        m.put(chicago['values_2'], taxi, 1)
-        print(present_taxi)
-    else:
-        re = m.get(chicago['values_2'], taxi)
-        print(re)
-        value_2 = me.getValue(re)
-        value_2 += 1
-        m.put(chicago['values_2'], taxi, value_2)
-
-    present_viaje = m.contains(chicago['values'], viaje)
-    if present_viaje == False:
-        m.put(chicago['values'], viaje, 1)
-    else:
-        r = m.get(chicago['values'], viaje)
-        value = me.getValue(r)
-        value += 1
-        m.put(chicago['values'], viaje, value)
-
-    # get_taxi = m.get(chicago['values_2'], taxi)
-    # get_viaje = m.get(chicago['values_2'], viaje)
-    # add_list = lt.addLast(chicago['values_2'], get_taxi)
-    # add_list = lt.addLast(chicago['values_2'], get_viaje)
-    present = om.contains(chicago['companies'], company)
-    if present == False:
-        om.put(chicago['companies'], company, m.get(chicago['values'], viaje))
-    else:
-        om.put(chicago['companies'], company, m.get(chicago['values'], viaje))
-
-    present = om.contains(chicago['companies_2'], company)
-    if present == False:
-        om.put(chicago['companies_2'], company,
-               m.get(chicago['values_2'], taxi))
-    else:
-        om.put(chicago['companies_2'], company,
-               m.get(chicago['values_2'], taxi))
-    return chicago
-
-# def add_date(chicago, taxi, total_millas, total_dinero, viaje):
-
-
-def primer_requerimiento(chicago, number_companies):
-    print(chicago['companies'])
-    print(chicago['companies_2'])
-    # ==============================
-    # Funciones de consulta
-    # ==============================
 
 
 def totalStops(analyzer):
@@ -207,15 +153,3 @@ def compareroutes(route1, route2):
         return 1
     else:
         return -1
-
-
-def compare(route1, route2):
-    """
-    Compara dos rutas
-    """
-    if (route1 == route2):
-        return 0
-    elif (route1 < route2):
-        return -1
-    else:
-        return 1
