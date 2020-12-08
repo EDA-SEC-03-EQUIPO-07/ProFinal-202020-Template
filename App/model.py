@@ -162,8 +162,11 @@ def add_viaje(viaje):
 
 
 def primer_requerimiento(chicago, number_taxis, number_viajes):
+    resultado = {}
+    # MAP PARA LOS VIAJES
     tra = m.newMap(numelements=30, maptype='PROBING',
                    comparefunction=compareOffenses)
+    # MAP PARA LOS TAXIS
     tax = m.newMap(numelements=30, maptype='PROBING',
                    comparefunction=compareOffenses)
     cola_prioridad_taxis = mi.newMinPQ(compareroutes)
@@ -190,9 +193,6 @@ def primer_requerimiento(chicago, number_taxis, number_viajes):
         value_company_viaje = me.getValue(pareja_viaje)
         mi.insert(cola_prioridad_viajes, m.size(value_company_viaje))
         m.put(tra, m.size(value_company_viaje), empresa_viaje)
-        print((empresa_viaje, m.size(value_company_viaje)))
-    # print(cola_prioridad_taxis)
-    # print(cola_prioridad_viajes)
 
     # WHILE PARA TAXIS
     number_tax = abs(mi.size(cola_prioridad_taxis)-int(number_taxis))
@@ -206,13 +206,16 @@ def primer_requerimiento(chicago, number_taxis, number_viajes):
     # WHILE PARA VIAJES
     number_tra = abs(mi.size(cola_prioridad_viajes)-int(number_viajes))
     iterar = 1
-    while i <= number_tra:
+    while iterar <= number_tra:
         mi.delMin(cola_prioridad_viajes)
         iterar += 1
     respuesta_viajes = auxiliar_requerimiento_uno_viajes(
         cola_prioridad_viajes, number_viajes, tra)
-    return respuesta_viajes
-    # return (total_taxis, number, respuesta_taxi, respuesta_viajes)
+    resultado['Número de taxis'] = total_taxis
+    resultado['Número de compañias'] = number
+    resultado['Compañias con más taxis'] = respuesta_taxi
+    resultado['Compañias con más servicios'] = respuesta_viajes
+    return resultado
 
 
 def auxiliar_requerimiento_uno_taxis(cola, number_taxis, tax):
@@ -229,16 +232,16 @@ def auxiliar_requerimiento_uno_taxis(cola, number_taxis, tax):
 
 
 def auxiliar_requerimiento_uno_viajes(cola, number_viajes, tra):
-    res = []
-    ite = 1
-    while ite <= int(number_viajes):
-        menor = mi.delMin(cola)
-        par = m.get(tra, menor)
-        llave = me.getValue(par)
-        res.append((llave, menor))
-        ite += 1
-    res.reverse()
-    return res
+    re = []
+    te = 1
+    while te <= int(number_viajes):
+        meno = mi.delMin(cola)
+        pa = m.get(tra, meno)
+        llav = me.getValue(pa)
+        re.append((llav, meno))
+        te += 1
+    re.reverse()
+    return re
 # ==============================
 # Funciones Helper
 # ==============================
