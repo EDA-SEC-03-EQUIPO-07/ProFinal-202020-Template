@@ -29,7 +29,7 @@ from DISClib.ADT.graph import gr
 from DISClib.Algorithms.Graphs import dfs as d
 from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import orderedmap as om
-from DISClib.ADT import stack as st
+from DISClib.ADT import minpq as mi
 from DISClib.ADT import map as m
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
@@ -60,26 +60,24 @@ def newAnalyzer():
     try:
         chicago = {
             'companies': None,
-            'companies_2': None,
-            'values_2': None,
-            'values': None,
-            'values': None,
+            'name_taxi': None,
+            'travel': None,
+            'taxi': None,
             'date': None
         }
 
-        chicago['companies'] = om.newMap(omaptype='RBT',
-                                         comparefunction=compareroutes)
-        chicago['companies_2'] = om.newMap(omaptype='RBT',
-                                           comparefunction=compareroutes)
-        chicago['values_2'] = m.newMap(numelements=30,
-                                       maptype='PROBING',
-                                       comparefunction=compareroutes)
-        chicago['values'] = m.newMap(numelements=30,
+        # chicago['companies'] = om.newMap(omaptype='RBT',
+        #                        comparefunction=compareroutes)
+        # chicago['companies_2'] = om.newMap(omaptype='RBT',
+        #                          comparefunction=compareroutes)
+        chicago['travel'] = m.newMap(numelements=100,
                                      maptype='PROBING',
-                                     comparefunction=compareroutes)
-        # chicago['values'] = lt.newList('SINGLE_LINKED', compareIds)
-        chicago['date'] = om.newMap(omaptype='RBT',
-                                    comparefunction=compareroutes)
+                                     comparefunction=compareOffenses)
+        chicago['taxi'] = m.newMap(numelements=100,
+                                   maptype='PROBING',
+                                   comparefunction=compareOffenses)
+        #chicago['name_taxi'] = lt.newList('ARRAY_LIST', compareroutes)
+        #chicago['date'] = lt.newList('ARRAY_LIST', compareroutes)
         # chicago['graph'] = gr.newGraph(datastructure='ADJ_LIST',
         #                              directed=True,
         #                             size=1000,
@@ -96,72 +94,151 @@ def addTrip(chicago, trip):
     taxi = trip["taxi_id"]
     total_dinero = trip["fare"]
     total_millas = trip["trip_miles"]
-    add_companies(chicago, company, taxi, viaje)
+    add_companies_taxi(chicago, company, taxi)
+    add_companies_viaje(chicago, company, viaje)
 
 
-def add_companies(chicago, company, taxi, viaje):
-    present_taxi = m.contains(chicago['values_2'], taxi)
+def add_companies_taxi(chicago, company, taxi):
+    if company == "":
+        auxiliar(chicago, company, taxi)
+    else:
+        present_taxi = m.contains(chicago['taxi'], company)
+        if present_taxi == False:
+            answer_taxi = add_taxi(taxi)
+            m.put(chicago['taxi'], company, answer_taxi)
+
+        else:
+            par_taxi = m.get(chicago['taxi'], company)
+            value_taxi = me.getValue(par_taxi)
+            if m.contains(value_taxi, taxi) == False:
+                m.put(value_taxi, taxi, 1)
+                m.put(chicago['taxi'], company, value_taxi)
+
+
+def add_taxi(taxi):
+    map_taxi = m.newMap(numelements=200, maptype='PROBING',
+                        comparefunction=compareOffenses)
+    m.put(map_taxi, taxi, 1)
+    return map_taxi
+
+
+def auxiliar(chicago, company, taxi):
+    company = "Independent Owner"
+    present_taxi = m.contains(chicago['taxi'], company)
     if present_taxi == False:
-        m.put(chicago['values_2'], taxi, 1)
-        print(present_taxi)
-    else:
-        re = m.get(chicago['values_2'], taxi)
-        print(re)
-        value_2 = me.getValue(re)
-        value_2 += 1
-        m.put(chicago['values_2'], taxi, value_2)
+        answer_taxi = add_taxi(taxi)
+        m.put(chicago['taxi'], company, answer_taxi)
 
-    present_viaje = m.contains(chicago['values'], viaje)
+    else:
+        par_taxi = m.get(chicago['taxi'], company)
+        value_taxi = me.getValue(par_taxi)
+        if m.contains(value_taxi, taxi) == False:
+            m.put(value_taxi, taxi, 1)
+            m.put(chicago['taxi'], company, value_taxi)
+
+
+def add_companies_viaje(chicago, company, viaje):
+    present_viaje = m.contains(chicago['travel'], company)
     if present_viaje == False:
-        m.put(chicago['values'], viaje, 1)
+        answer_viaje = add_viaje(viaje)
+        m.put(chicago['travel'], company, answer_viaje)
+
     else:
-        r = m.get(chicago['values'], viaje)
-        value = me.getValue(r)
-        value += 1
-        m.put(chicago['values'], viaje, value)
-
-    # get_taxi = m.get(chicago['values_2'], taxi)
-    # get_viaje = m.get(chicago['values_2'], viaje)
-    # add_list = lt.addLast(chicago['values_2'], get_taxi)
-    # add_list = lt.addLast(chicago['values_2'], get_viaje)
-    present = om.contains(chicago['companies'], company)
-    if present == False:
-        om.put(chicago['companies'], company, m.get(chicago['values'], viaje))
-    else:
-        om.put(chicago['companies'], company, m.get(chicago['values'], viaje))
-
-    present = om.contains(chicago['companies_2'], company)
-    if present == False:
-        om.put(chicago['companies_2'], company,
-               m.get(chicago['values_2'], taxi))
-    else:
-        om.put(chicago['companies_2'], company,
-               m.get(chicago['values_2'], taxi))
-    return chicago
-
-# def add_date(chicago, taxi, total_millas, total_dinero, viaje):
+        par_viaje = m.get(chicago['travel'], company)
+        value_viaje = me.getValue(par_viaje)
+        if m.contains(value_viaje, viaje) == False:
+            m.put(value_viaje, viaje, 1)
+            m.put(chicago['travel'], company, value_viaje)
 
 
-def primer_requerimiento(chicago, number_companies):
-    print(chicago['companies'])
-    print(chicago['companies_2'])
-    # ==============================
-    # Funciones de consulta
-    # ==============================
+def add_viaje(viaje):
+    map_travel = m.newMap(numelements=200, maptype='PROBING',
+                          comparefunction=compareOffenses)
+    m.put(map_travel, viaje, 1)
+    return map_travel
+# ==============================
+# Funciones de consulta
+# ==============================
 
 
-def totalStops(analyzer):
-    """
-    Retorna el total de estaciones (vertices) del grafo
-    """
-    return gr.numVertices(analyzer['graph'])
+def primer_requerimiento(chicago, number_taxis, number_viajes):
+    tra = m.newMap(numelements=30, maptype='PROBING',
+                   comparefunction=compareOffenses)
+    tax = m.newMap(numelements=30, maptype='PROBING',
+                   comparefunction=compareOffenses)
+    cola_prioridad_taxis = mi.newMinPQ(compareroutes)
+    cola_prioridad_viajes = mi.newMinPQ(compareroutes)
+    number = m.size(chicago['taxi'])
+    total_taxis = 0
+    # LISTA DE LLAVES DE EMPRESAS PARA LOS TAXIS
+    list_taxis = m.keySet(chicago['taxi'])
+    iterador_taxis = it.newIterator(list_taxis)
+    # LISTA DE LLAVES DE EMPRESAS PARA LOS VIAJES
+    list_viajes = m.keySet(chicago['travel'])
+    iterador_viajes = it.newIterator(list_viajes)
+    while it.hasNext(iterador_taxis) and it.hasNext(iterador_viajes):
+        empresa_taxi = it.next(iterador_taxis)
+        empresa_viaje = it.next(iterador_viajes)
+        # PARTE DE TAXIS
+        pareja_taxi = m.get(chicago['taxi'], empresa_taxi)
+        value_company_taxi = me.getValue(pareja_taxi)
+        total_taxis += m.size(value_company_taxi)
+        mi.insert(cola_prioridad_taxis, m.size(value_company_taxi))
+        m.put(tax, m.size(value_company_taxi), empresa_taxi)
+        # PARTE DE VIAJES
+        pareja_viaje = m.get(chicago['travel'], empresa_viaje)
+        value_company_viaje = me.getValue(pareja_viaje)
+        mi.insert(cola_prioridad_viajes, m.size(value_company_viaje))
+        m.put(tra, m.size(value_company_viaje), empresa_viaje)
+        print((empresa_viaje, m.size(value_company_viaje)))
+    # print(cola_prioridad_taxis)
+    # print(cola_prioridad_viajes)
+
+    # WHILE PARA TAXIS
+    number_tax = abs(mi.size(cola_prioridad_taxis)-int(number_taxis))
+    i = 1
+    while i <= number_tax:
+        mi.delMin(cola_prioridad_taxis)
+        i += 1
+    respuesta_taxi = auxiliar_requerimiento_uno_taxis(
+        cola_prioridad_taxis, number_taxis, tax)
+
+    # WHILE PARA VIAJES
+    number_tra = abs(mi.size(cola_prioridad_viajes)-int(number_viajes))
+    iterar = 1
+    while i <= number_tra:
+        mi.delMin(cola_prioridad_viajes)
+        iterar += 1
+    respuesta_viajes = auxiliar_requerimiento_uno_viajes(
+        cola_prioridad_viajes, number_viajes, tra)
+    return respuesta_viajes
+    # return (total_taxis, number, respuesta_taxi, respuesta_viajes)
 
 
-def totalConnections(analyzer):
-    """
-    Retorna el total arcos del grafo
-    """
-    return gr.numEdges(analyzer['graph'])
+def auxiliar_requerimiento_uno_taxis(cola, number_taxis, tax):
+    res = []
+    ite = 1
+    while ite <= int(number_taxis):
+        menor = mi.delMin(cola)
+        par = m.get(tax, menor)
+        llave = me.getValue(par)
+        res.append((llave, menor))
+        ite += 1
+    res.reverse()
+    return res
+
+
+def auxiliar_requerimiento_uno_viajes(cola, number_viajes, tra):
+    res = []
+    ite = 1
+    while ite <= int(number_viajes):
+        menor = mi.delMin(cola)
+        par = m.get(tra, menor)
+        llave = me.getValue(par)
+        res.append((llave, menor))
+        ite += 1
+    res.reverse()
+    return res
 # ==============================
 # Funciones Helper
 # ==============================
@@ -209,13 +286,15 @@ def compareroutes(route1, route2):
         return -1
 
 
-def compare(route1, route2):
+def compareOffenses(offense1, offense2):
     """
-    Compara dos rutas
+    Compara dos ids de libros, id es un identificador
+    y entry una pareja llave-valor
     """
-    if (route1 == route2):
+    offense = me.getKey(offense2)
+    if (offense1 == offense):
         return 0
-    elif (route1 < route2):
-        return -1
-    else:
+    elif (offense1 > offense):
         return 1
+    else:
+        return -1

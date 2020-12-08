@@ -98,8 +98,8 @@ def connectedComponents(analyzer, id1, id2):
     return model.connectedComponents(analyzer, id1, id2)
 
 
-def primer_requerimiento(analyzer, number_companies):
-    return model.primer_requerimiento(analyzer, number_companies)
+def primer_requerimiento(analyzer, number_taxis, number_viajes):
+    return model.primer_requerimiento(analyzer, number_taxis, number_viajes)
 
 
 def segundo_requerimiento(analyzer, number_taxis, date):

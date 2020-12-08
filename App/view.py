@@ -53,7 +53,7 @@ def printMenu():
     print("*******************************************")
     print("Bienvenido")
     print("1- Inicializar Analizador")
-    print("2- Cargar información de buses de singapur")
+    print("2- Cargar información del servicio de taxis")
     print("3- Primer requerimiento ")
     print("4- Segundo requerimiento")
     print("0- Salir")
@@ -79,9 +79,10 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 3:
-        number_companies = input("Ingrese el numero de compañias ")
+        number_taxis = input("Ingrese el numero de compañias con más taxis ")
+        number_viajes = input("Ingrese el numero de compañias con más viajes ")
         value_1 = controller.primer_requerimiento(
-            cont, number_companies)
+            cont, number_taxis, number_viajes)
         executiontime = timeit.timeit(number=1)
         print("Los resultados son los siguientes " + str(value_1))
         print("Tiempo de ejecución: " + str(executiontime))
