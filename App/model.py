@@ -36,6 +36,7 @@ from DISClib.DataStructures import listiterator as it
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
+import datetime
 assert config
 
 """
@@ -59,8 +60,8 @@ def newAnalyzer():
     """
     try:
         chicago = {
-            'companies': None,
-            'name_taxi': None,
+            # 'companies': None,
+            # 'name_taxi': None,
             'travel': None,
             'taxi': None,
             'date': None
@@ -68,8 +69,8 @@ def newAnalyzer():
 
         # chicago['companies'] = om.newMap(omaptype='RBT',
         #                        comparefunction=compareroutes)
-        # chicago['companies_2'] = om.newMap(omaptype='RBT',
-        #                          comparefunction=compareroutes)
+        chicago['date'] = om.newMap(omaptype='RBT',
+                                    comparefunction=compareroutes)
         chicago['travel'] = m.newMap(numelements=100,
                                      maptype='PROBING',
                                      comparefunction=compareOffenses)
@@ -94,8 +95,46 @@ def addTrip(chicago, trip):
     taxi = trip["taxi_id"]
     total_dinero = trip["fare"]
     total_millas = trip["trip_miles"]
+    date = trip["trip_start_timestamp"]
+    add_date_taxis(chicago, viaje, total_dinero, total_millas, date, taxi)
     add_companies_taxi(chicago, company, taxi)
     add_companies_viaje(chicago, company, viaje)
+
+
+def add_date_taxis(chicago, viaje, total_dinero, total_millas, date, taxi):
+    """
+    Para calcular los puntos asignados a un taxi se calcula una función alfa diaria; 
+    esta función se define como la división del total de millas recorridas entre el 
+    total de dinero recibido, esto multiplicado por el total de servicios prestados
+    """
+    total_dinero = float(total_dinero)
+    total_millas = float(total_millas)
+    time = datetime.datetime.strptime(date, '%Y-%m-%dt%H:%M:%S.%f')
+    present_date = om.contains(chicago['date'], time.date())
+    if present_date == False:
+        llave_valor = add_date(taxi, viaje, total_dinero, total_millas)
+        om.put(chicago['date'], time.date(), llave_valor)
+    else:
+        date_taxi = om.get(chicago['date'], time.date())
+        ma_taxi = me.getValue(date_taxi)
+        if m.contains(ma_taxi, taxi) == False:
+            puntos_obtenidos = ((total_millas/total_dinero)*1)
+            m.put(ma_taxi, taxi, puntos_obtenidos)
+            om.put(chicago['date'], time.date(), ma_taxi)
+        else:
+            puntaje = ((total_millas/total_dinero)*1)
+            obtener_taxi = m.get(ma_taxi, taxi)
+            get_value = me.getValue(obtener_taxi)
+            get_value += puntaje
+            m.put(ma_taxi, taxi, get_value)
+
+
+def add_date(taxi, viaje, total_dinero, total_millas):
+    map_date = m.newMap(numelements=200, maptype='PROBING',
+                        comparefunction=compareOffenses)
+    puntos = ((total_millas/total_dinero)*1)
+    m.put(map_date, taxi, puntos)
+    return map_date
 
 
 def add_companies_taxi(chicago, company, taxi):
@@ -159,6 +198,14 @@ def add_viaje(viaje):
 # ==============================
 # Funciones de consulta
 # ==============================
+
+
+def segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate):
+    pass
+
+
+def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):
+    pass
 
 
 def primer_requerimiento(chicago, number_taxis, number_viajes):
