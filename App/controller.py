@@ -26,6 +26,7 @@
 
 import config as cf
 from App import model
+import datetime
 import csv
 
 """
@@ -104,7 +105,7 @@ def primer_requerimiento(analyzer, number_taxis, number_viajes):
 
 def segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate):
     initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
-    return model.segundo_requerimiento(analyzer, number_taxis, initialDate)
+    return model.segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate)
 
 
 def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):

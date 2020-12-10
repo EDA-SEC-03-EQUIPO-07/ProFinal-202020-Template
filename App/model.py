@@ -100,9 +100,53 @@ def addTrip(chicago, trip):
     total_dinero = trip["trip_total"]
     total_millas = trip["trip_miles"]
     date = trip["trip_start_timestamp"]
-    add_date_taxis(chicago, viaje, total_dinero, total_millas, date, taxi)
+    add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip)
     add_companies_taxi(chicago, company, taxi)
     add_companies_viaje(chicago, company, viaje)
+
+
+def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
+    """
+    Para calcular los puntos asignados a un taxi se calcula una función alfa diaria; 
+    esta función se define como la división del total de millas recorridas entre el 
+    total de dinero recibido, esto multiplicado por el total de servicios prestados
+    """
+
+    time = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
+    present_date = om.contains(chicago['date'], time.date())
+    if present_date == False:
+        llave_valor = add_date(taxi, total_dinero, total_millas, trip)
+        om.put(chicago['date'], time.date(), llave_valor)
+
+    else:
+        date_taxi = om.get(chicago['date'], time.date())
+        ma_taxi = me.getValue(date_taxi)
+        if m.contains(ma_taxi, taxi) == False:
+            if (total_dinero != '0.0') and (total_millas != '0.0'):
+                helped = auxi(trip)
+                m.put(ma_taxi, taxi, helped)
+                om.put(chicago['date'], time.date(), ma_taxi)
+        else:
+            if (total_dinero != '0.0') and (total_millas != '0.0'):
+                obtener_taxi = m.get(ma_taxi, taxi)
+                get_value = me.getValue(obtener_taxi)
+                lt.addLast(get_value,  trip)
+                m.put(ma_taxi, taxi, get_value)
+
+
+def add_date(taxi, total_dinero, total_millas, trip):
+    if (total_dinero != '0.0') and (total_millas != '0.0'):
+        map_date = m.newMap(numelements=200, maptype='PROBING',
+                            comparefunction=compareOffenses)
+        res = auxi(trip)
+        m.put(map_date, taxi, res)
+    return map_date
+
+
+def auxi(trip):
+    new_list = lt.newList('SINGLE_LINKED', compareroutes)
+    lt.addLast(new_list, trip)
+    return new_list
 
 
 def add_companies_taxi(chicago, company, taxi):
@@ -146,59 +190,13 @@ def add_companies_viaje(chicago, company, viaje):
             par_viaje = m.get(chicago['travel'], company)
             par_viaje['value'] += 1
 
-
-def add_date_taxis(chicago, viaje, total_dinero, total_millas, date, taxi):
-    """
-    Para calcular los puntos asignados a un taxi se calcula una función alfa diaria; 
-    esta función se define como la división del total de millas recorridas entre el 
-    total de dinero recibido, esto multiplicado por el total de servicios prestados
-    """
-    total_dinero = float(total_dinero)
-    total_millas = float(total_millas)
-    time = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
-    present_date = om.contains(chicago['date'], time.date())
-    if present_date == False:
-        llave_valor = add_date(taxi, viaje, total_dinero, total_millas)
-        om.put(chicago['date'], time.date(), llave_valor)
-    else:
-        date_taxi = om.get(chicago['date'], time.date())
-        ma_taxi = me.getValue(date_taxi)
-        if m.contains(ma_taxi, taxi) == False:
-            puntos_obtenidos = ((total_millas/total_dinero)*1)
-            m.put(ma_taxi, taxi, puntos_obtenidos)
-            om.put(chicago['date'], time.date(), ma_taxi)
-        else:
-            puntaje = ((total_millas/total_dinero)*1)
-            obtener_taxi = m.get(ma_taxi, taxi)
-            get_value = me.getValue(obtener_taxi)
-            get_value += puntaje
-            m.put(ma_taxi, taxi, get_value)
-
-
-def add_date(taxi, viaje, total_dinero, total_millas):
-    map_date = m.newMap(numelements=200, maptype='PROBING',
-                        comparefunction=compareOffenses)
-    puntos = ((total_millas/total_dinero)*1)
-    m.put(map_date, taxi, puntos)
-    return map_date
-
-
-def getDateTimeTaxiTrip(taxitrip):
-    """
-    Recibe la informacion de un servicio de taxi leido del archivo de datos (parametro).
-    Retorna de forma separada la fecha (date) y el tiempo (time) del dato 'trip_start_timestamp'
-    Los datos date se pueden comparar con <, >, <=, >=, ==, !=
-    Los datos time se pueden comparar con <, >, <=, >=, ==, !=
-    """
-    tripstartdate = taxitrip['trip_start_timestamp']
-    taxitripdatetime = datetime.datetime.strptime(
-        tripstartdate, '%Y-%m-%dT%H:%M:%S.%f')
-    return taxitripdatetime.date(), taxitripdatetime.time()
 # ==============================
 # Funciones de consulta
 # ==============================
-# def segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate):
-#    pass
+
+
+def segundo_requerimiento_primera_consulta(chicago, number_taxis, initialDate):
+    print(om.size(chicago['date']))
 
 
 # def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):

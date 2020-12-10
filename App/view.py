@@ -90,7 +90,8 @@ while True:
     elif int(inputs[0]) == 4:
         number_taxis = input("Ingrese el de taxis ")
         date = input("Ingrese la fecha ")
-        value_2 = controller.segunda_consulta(cont, number_taxis, date)
+        value_2 = controller.segundo_requerimiento_primera_consulta(
+            cont, number_taxis, date)
         executiontime = timeit.timeit(number=1)
         print("La información es la siguiente: " + str(value_2))
         print("Tiempo de ejecución: " + str(executiontime))
