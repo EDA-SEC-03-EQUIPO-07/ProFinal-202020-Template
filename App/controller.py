@@ -103,9 +103,9 @@ def primer_requerimiento(analyzer, number_taxis, number_viajes):
     return model.primer_requerimiento(analyzer, number_taxis, number_viajes)
 
 
-def segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate):
+def segundo_requerimiento_primera_consulta(analyzer, number_taxis_1, initialDate):
     initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
-    return model.segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate.date())
+    return model.segundo_requerimiento_primera_consulta(analyzer, number_taxis_1, initialDate.date())
 
 
 def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):

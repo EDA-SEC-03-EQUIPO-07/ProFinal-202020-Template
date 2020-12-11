@@ -101,10 +101,10 @@ while True:
     elif int(inputs[0]) == 5:
         initialDate = input("Ingrese la fecha de inicio ")
         finalDate = input("Ingrese la fecha final ")
-        number_taxis = input(
+        number_taxis_1 = input(
             "Ingrese la cantidad de taxis con más puntos que desea conocer ")
         value_3 = controller.segundo_requerimiento_segunda_consulta(
-            cont, number_taxis, initialDate,  finalDate)
+            cont, number_taxis_1, initialDate,  finalDate)
         executiontime = timeit.timeit(number=1)
         print("La información es la siguiente: " + str(value_3))
         print("Tiempo de ejecución: " + str(executiontime))

@@ -119,14 +119,14 @@ def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
         date_taxi = om.get(chicago['date'], time.date())
         ma_taxi = me.getValue(date_taxi)
         if m.contains(ma_taxi, taxi) == False:
-            if ((total_dinero != '0.0') and (total_millas != '')):
-                if ((total_millas != '0.0') and (total_dinero != '')):
+            if ((total_dinero != '0.0') and (total_dinero != '')):
+                if ((total_millas != '0.0') and (total_millas != '')):
                     helped = auxi(trip)
                     m.put(ma_taxi, taxi, helped)
                     om.put(chicago['date'], time.date(), ma_taxi)
         else:
-            if ((total_dinero != '0.0') and (total_millas != '')):
-                if ((total_millas != '0.0') and (total_dinero != '')):
+            if ((total_dinero != '0.0') and (total_dinero != '')):
+                if ((total_millas != '0.0') and (total_millas != '')):
                     obtener_taxi = m.get(ma_taxi, taxi)
                     get_value = me.getValue(obtener_taxi)
                     dicc = {'trip_total': trip["trip_total"],
@@ -136,8 +136,8 @@ def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
 
 
 def add_date(taxi, total_dinero, total_millas, trip):
-    if ((total_dinero != '0.0') and (total_millas != '')):
-        if ((total_millas != '0.0') and (total_dinero != '')):
+    if ((total_dinero != '0.0') and (total_dinero != '')):
+        if ((total_millas != '0.0') and (total_millas != '')):
             map_date = m.newMap(numelements=200, maptype='PROBING',
                                 comparefunction=compareOffenses)
             res = auxi(trip)
@@ -210,17 +210,8 @@ def segundo_requerimiento_primera_consulta(chicago, number_taxis, initialDate):
         while it.hasNext(iterador):
             name_taxi = it.next(iterador)
             pareja_taxi = m.get(date_value['value'], name_taxi)
-            #puntaje = funcion_auxiliar(pareja_taxi['value'])
-            total_viajes = lt.size(pareja_taxi['value'])
-            suma_pago = 0.0
-            suma_millas = 0.0
-            i = 1
-            while i <= total_viajes:
-                primero = lt.removeFirst(pareja_taxi['value'])
-                suma_pago += float(primero['trip_total'])
-                suma_millas += float((primero['trip_miles']))
-                i += 1
-            puntaje = ((suma_millas/suma_pago)*total_viajes)
+            # FUNCION QUE DA LOS PUNTOS DE UN TAXI
+            puntaje = funcion_auxiliar(pareja_taxi['value'])
             m.put(tax, puntaje, name_taxi)
             mi.insert(cola_prioridad_taxis, puntaje)
         # WHILE PARA TAXIS
@@ -252,18 +243,8 @@ def segundo_requerimiento_segunda_consulta(chicago, number_taxis, initialDate,  
             while it.hasNext(ite):
                 name_taxi = it.next(ite)
                 par_taxi = m.get(pareja_taxi['value'], name_taxi)
-                #total_viajes = lt.size(par_taxi['value'])
-                total_viajes = lt.size(par_taxi['value'])
-                suma_pago = 0.0
-                suma_millas = 0.0
-                i = 1
-                while i <= total_viajes:
-                    primero = lt.removeFirst(par_taxi['value'])
-                    suma_pago += float(primero['trip_total'])
-                    suma_millas += float((primero['trip_miles']))
-                    i += 1
-                puntuacion = ((suma_millas/suma_pago)*total_viajes)
-                #puntuacion = funcion_auxiliar(par_taxi['value'])
+                # FUNCION QUE DA LOS PUNTOS DE UN TAXI
+                puntuacion = funcion_auxiliar(par_taxi['value'])
                 if (m.contains(date_total, name_taxi) == False):
                     m.put(date_total, name_taxi, puntuacion)
                 else:
@@ -275,6 +256,20 @@ def segundo_requerimiento_segunda_consulta(chicago, number_taxis, initialDate,  
     else:
         answer = "La(s) llave(s) no está(n) almacenada(s)."
     return answer
+
+
+def funcion_auxiliar(lista):
+    total_viajes = lt.size(lista)
+    suma_pago = 0.0
+    suma_millas = 0.0
+    i = 1
+    while i <= total_viajes:
+        primero = lt.getElement(lista, i)
+        suma_pago += float(primero['trip_total'])
+        suma_millas += float((primero['trip_miles']))
+        i += 1
+    puntos = ((suma_millas/suma_pago)*total_viajes)
+    return puntos
 
 
 def otra_auxiliar(mapa, number_taxis):
