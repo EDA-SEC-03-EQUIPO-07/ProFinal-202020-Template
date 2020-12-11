@@ -55,7 +55,8 @@ def printMenu():
     print("1- Inicializar Analizador")
     print("2- Cargar información del servicio de taxis")
     print("3- Primer requerimiento ")
-    print("4- Segundo requerimiento")
+    print("4- Segundo requerimiento - primera consulta ")
+    print("5- Segundo requerimiento - segunda consulta ")
     print("0- Salir")
     print("*******************************************")
 
@@ -88,8 +89,9 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 4:
-        number_taxis = input("Ingrese el de taxis ")
         date = input("Ingrese la fecha ")
+        number_taxis = input(
+            "Ingrese la cantidad de taxis con más puntos que desea conocer ")
         value_2 = controller.segundo_requerimiento_primera_consulta(
             cont, number_taxis, date)
         executiontime = timeit.timeit(number=1)
@@ -97,7 +99,12 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 5:
-        value_3 = controller.tercera_consulta(cont)
+        initialDate = input("Ingrese la fecha de inicio ")
+        finalDate = input("Ingrese la fecha final ")
+        number_taxis = input(
+            "Ingrese la cantidad de taxis con más puntos que desea conocer ")
+        value_3 = controller.segundo_requerimiento_segunda_consulta(
+            cont, number_taxis, initialDate,  finalDate)
         executiontime = timeit.timeit(number=1)
         print("La información es la siguiente: " + str(value_3))
         print("Tiempo de ejecución: " + str(executiontime))

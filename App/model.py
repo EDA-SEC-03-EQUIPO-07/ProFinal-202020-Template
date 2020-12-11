@@ -60,7 +60,7 @@ def newAnalyzer():
     """
     try:
         chicago = {
-            'name_travel': None,
+            # 'name_travel': None,
             'name_taxi': None,
             'travel': None,
             'taxi': None,
@@ -80,9 +80,6 @@ def newAnalyzer():
         chicago['name_taxi'] = m.newMap(numelements=5000,
                                         maptype='PROBING',
                                         comparefunction=compareOffenses)
-        chicago['name_travel'] = m.newMap(numelements=5500,
-                                          maptype='PROBING',
-                                          comparefunction=compareOffenses)
         # chicago['graph'] = gr.newGraph(datastructure='ADJ_LIST',
         #                              directed=True,
         #                             size=1000,
@@ -130,7 +127,9 @@ def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
             if (total_dinero != '0.0') and (total_millas != '0.0'):
                 obtener_taxi = m.get(ma_taxi, taxi)
                 get_value = me.getValue(obtener_taxi)
-                lt.addLast(get_value,  trip)
+                dicc = {'trip_total': trip["trip_total"],
+                        'trip_miles': trip["trip_miles"]}
+                lt.addLast(get_value,  dicc)
                 m.put(ma_taxi, taxi, get_value)
 
 
@@ -144,8 +143,10 @@ def add_date(taxi, total_dinero, total_millas, trip):
 
 
 def auxi(trip):
+    dicc = {'trip_total': trip["trip_total"], 'trip_miles': trip["trip_miles"]}
     new_list = lt.newList('SINGLE_LINKED', compareroutes)
-    lt.addLast(new_list, trip)
+
+    lt.addLast(new_list, dicc)
     return new_list
 
 
@@ -182,13 +183,10 @@ def add_companies_viaje(chicago, company, viaje):
     present_company = m.contains(chicago['travel'], company)
     if present_company == False:
         m.put(chicago['travel'], company, 1)
-        m.put(chicago['name_travel'], viaje, 1)
 
     else:
-        if m.contains(chicago['name_travel'], viaje) == False:
-            m.put(chicago['name_travel'], viaje, 1)
-            par_viaje = m.get(chicago['travel'], company)
-            par_viaje['value'] += 1
+        par_viaje = m.get(chicago['travel'], company)
+        par_viaje['value'] += 1
 
 # ==============================
 # Funciones de consulta
@@ -196,11 +194,42 @@ def add_companies_viaje(chicago, company, viaje):
 
 
 def segundo_requerimiento_primera_consulta(chicago, number_taxis, initialDate):
-    print(om.size(chicago['date']))
+    present_date = om.contains(chicago['date'], initialDate)
+    if present_date == True:
+        resultado = {}
+        # MAP PARA LOS TAXIS
+        tax = m.newMap(numelements=30, maptype='PROBING',
+                       comparefunction=compareOffenses)
+        cola_prioridad_taxis = mi.newMinPQ(compareroutes)
+        date_value = om.get(chicago['date'], initialDate)
+        list_value = m.keySet(date_value['value'])
+        iterador = it.newIterator(list_value)
+        while it.hasNext(iterador):
+            name_taxi = it.next(iterador)
+            pareja_taxi = m.get(date_value['value'], name_taxi)
+            total_viajes = lt.size(pareja_taxi['value'])
+            suma_pago = 0.0
+            suma_millas = 0.0
+            i = 1
+            while i <= total_viajes:
+                primero = lt.removeFirst(pareja_taxi['value'])
+                suma_pago += float(primero['trip_total'])
+                suma_millas += float((primero['trip_miles']))
+                i += 1
+                if i == total_viajes:
+                    puntos = ((suma_millas/suma_pago)*total_viajes)
+                    m.put(tax, puntos, name_taxi)
+                    mi.insert(cola_prioridad_taxis, puntos)
 
+        # WHILE PARA TAXIS
+        ayuda = comun(cola_prioridad_taxis, number_taxis)
+        ranking = auxiliar_requerimiento_uno_taxis(
+            ayuda, number_taxis, tax)
+        return ranking
 
 # def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):
 #   pass
+
 
 def primer_requerimiento(chicago, number_taxis, number_viajes):
     if (int(number_taxis) > m.size(chicago['travel'])) or (int(number_viajes) > m.size(chicago['travel'])):
@@ -236,14 +265,9 @@ def primer_requerimiento(chicago, number_taxis, number_viajes):
             mi.insert(cola_prioridad_viajes, pareja_viaje['value'])
             m.put(tra, pareja_viaje['value'], empresa_viaje)
 
-        # WHILE PARA TAXIS
-        number_tax = abs(mi.size(cola_prioridad_taxis)-int(number_taxis))
-        i = 1
-        while i <= number_tax:
-            mi.delMin(cola_prioridad_taxis)
-            i += 1
+        ayuda = comun(cola_prioridad_taxis, number_taxis)
         respuesta_taxi = auxiliar_requerimiento_uno_taxis(
-            cola_prioridad_taxis, number_taxis, tax)
+            ayuda, number_taxis, tax)
 
         # WHILE PARA VIAJES
         number_tra = abs(mi.size(cola_prioridad_viajes)-int(number_viajes))
@@ -259,6 +283,15 @@ def primer_requerimiento(chicago, number_taxis, number_viajes):
         resultado['Compañias con más servicios'] = respuesta_viajes
         answer = resultado
     return answer
+
+
+def comun(cola_prioridad_taxis, number_taxis):
+    number_tax = abs(mi.size(cola_prioridad_taxis)-int(number_taxis))
+    i = 1
+    while i <= number_tax:
+        mi.delMin(cola_prioridad_taxis)
+        i += 1
+    return cola_prioridad_taxis
 
 
 def auxiliar_requerimiento_uno_taxis(cola, number_taxis, tax):
