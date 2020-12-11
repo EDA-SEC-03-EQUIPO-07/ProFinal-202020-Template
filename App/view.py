@@ -66,8 +66,7 @@ Menu principal
 """
 while True:
     printMenu()
-    inputs = input('Seleccione una opción para continuar\n>')
-
+    inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("\nInicializando....")
         # cont es el controlador que se usará de acá en adelante
@@ -95,7 +94,8 @@ while True:
         value_2 = controller.segundo_requerimiento_primera_consulta(
             cont, number_taxis, date)
         executiontime = timeit.timeit(number=1)
-        print("La información es la siguiente: " + str(value_2))
+        print("Los Taxis con más puntos en la fecha " +
+              str(date) + " son: " + str(value_2))
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 5:

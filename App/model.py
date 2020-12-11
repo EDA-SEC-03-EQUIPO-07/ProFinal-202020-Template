@@ -119,26 +119,29 @@ def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
         date_taxi = om.get(chicago['date'], time.date())
         ma_taxi = me.getValue(date_taxi)
         if m.contains(ma_taxi, taxi) == False:
-            if (total_dinero != '0.0') and (total_millas != '0.0'):
-                helped = auxi(trip)
-                m.put(ma_taxi, taxi, helped)
-                om.put(chicago['date'], time.date(), ma_taxi)
+            if ((total_dinero != '0.0') and (total_millas != '')):
+                if ((total_millas != '0.0') and (total_dinero != '')):
+                    helped = auxi(trip)
+                    m.put(ma_taxi, taxi, helped)
+                    om.put(chicago['date'], time.date(), ma_taxi)
         else:
-            if (total_dinero != '0.0') and (total_millas != '0.0'):
-                obtener_taxi = m.get(ma_taxi, taxi)
-                get_value = me.getValue(obtener_taxi)
-                dicc = {'trip_total': trip["trip_total"],
-                        'trip_miles': trip["trip_miles"]}
-                lt.addLast(get_value,  dicc)
-                m.put(ma_taxi, taxi, get_value)
+            if ((total_dinero != '0.0') and (total_millas != '')):
+                if ((total_millas != '0.0') and (total_dinero != '')):
+                    obtener_taxi = m.get(ma_taxi, taxi)
+                    get_value = me.getValue(obtener_taxi)
+                    dicc = {'trip_total': trip["trip_total"],
+                            'trip_miles': trip["trip_miles"]}
+                    lt.addLast(get_value,  dicc)
+                    m.put(ma_taxi, taxi, get_value)
 
 
 def add_date(taxi, total_dinero, total_millas, trip):
-    if (total_dinero != '0.0') and (total_millas != '0.0'):
-        map_date = m.newMap(numelements=200, maptype='PROBING',
-                            comparefunction=compareOffenses)
-        res = auxi(trip)
-        m.put(map_date, taxi, res)
+    if ((total_dinero != '0.0') and (total_millas != '')):
+        if ((total_millas != '0.0') and (total_dinero != '')):
+            map_date = m.newMap(numelements=200, maptype='PROBING',
+                                comparefunction=compareOffenses)
+            res = auxi(trip)
+            m.put(map_date, taxi, res)
     return map_date
 
 
@@ -207,28 +210,82 @@ def segundo_requerimiento_primera_consulta(chicago, number_taxis, initialDate):
         while it.hasNext(iterador):
             name_taxi = it.next(iterador)
             pareja_taxi = m.get(date_value['value'], name_taxi)
-            total_viajes = lt.size(pareja_taxi['value'])
-            suma_pago = 0.0
-            suma_millas = 0.0
-            i = 1
-            while i <= total_viajes:
-                primero = lt.removeFirst(pareja_taxi['value'])
-                suma_pago += float(primero['trip_total'])
-                suma_millas += float((primero['trip_miles']))
-                i += 1
-                if i == total_viajes:
-                    puntos = ((suma_millas/suma_pago)*total_viajes)
-                    m.put(tax, puntos, name_taxi)
-                    mi.insert(cola_prioridad_taxis, puntos)
-
+            puntaje = funcion_auxiliar(pareja_taxi['value'])
+            m.put(tax, puntaje, name_taxi)
+            mi.insert(cola_prioridad_taxis, puntaje)
         # WHILE PARA TAXIS
         ayuda = comun(cola_prioridad_taxis, number_taxis)
         ranking = auxiliar_requerimiento_uno_taxis(
             ayuda, number_taxis, tax)
-        return ranking
+        resultado["Taxis con más puntos"] = ranking
+        answer = resultado
+    else:
+        answer = "La llave no está almacenada."
+    return answer
 
-# def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):
-#   pass
+
+def segundo_requerimiento_segunda_consulta(chicago, number_taxis, initialDate,  finalDate):
+    present_date = om.contains(chicago['date'], initialDate)
+    present_final = om.contains(chicago['date'], finalDate)
+    if (present_date == True) and (present_final == True):
+        resultado = {}
+        # MAP PARA LOS TAXIS
+        date_total = m.newMap(numelements=1000, maptype='PROBING',
+                              comparefunction=compareOffenses)
+        date_key = om.keys(chicago['date'], initialDate, finalDate)
+        iterador = it.newIterator(date_key)
+        while it.hasNext(iterador):
+            name_date = it.next(iterador)
+            pareja_taxi = om.get(chicago['date'], name_date)
+            total_viajes = m.keySet(pareja_taxi['value'])
+            ite = it.newIterator(total_viajes)
+            while it.hasNext(ite):
+                name_taxi = it.next(ite)
+                par_taxi = m.get(pareja_taxi['value'], name_taxi)
+                #total_viajes = lt.size(par_taxi['value'])
+                puntuacion = funcion_auxiliar(par_taxi['value'])
+                if (m.contains(date_total, name_taxi) == False):
+                    m.put(date_total, name_taxi, puntuacion)
+                else:
+                    coinciden = m.get(date_total, name_taxi)
+                    coinciden['value'] += puntuacion
+        mapa_auxiliar = otra_auxiliar(date_total, number_taxis)
+        resultado["Taxis con más puntos"] = mapa_auxiliar
+        answer = resultado
+    else:
+        answer = "La(s) llave(s) no está(n) almacenada(s)."
+    return answer
+
+
+def otra_auxiliar(mapa, number_taxis):
+    new_mapa = m.newMap(numelements=100, maptype='PROBING',
+                        comparefunction=compareOffenses)
+    cola_prioridad_taxis = mi.newMinPQ(compareroutes)
+    list_taxi = m.keySet(mapa)
+    ite = it.newIterator(list_taxi)
+    while it.hasNext(ite):
+        name_taxi = it.next(ite)
+        par_taxi = m.get(mapa, name_taxi)
+        m.put(new_mapa, par_taxi['value'], name_taxi)
+        mi.insert(cola_prioridad_taxis, par_taxi['value'])
+    restantes = comun(cola_prioridad_taxis, number_taxis)
+    ranking = auxiliar_requerimiento_uno_taxis(
+        restantes, number_taxis, new_mapa)
+    return ranking
+
+
+def funcion_auxiliar(lista):
+    total_viajes = lt.size(lista)
+    suma_pago = 0.0
+    suma_millas = 0.0
+    i = 1
+    while i <= total_viajes:
+        primero = lt.removeFirst(lista)
+        suma_pago += float(primero['trip_total'])
+        suma_millas += float((primero['trip_miles']))
+        i += 1
+    puntos = ((suma_millas/suma_pago)*total_viajes)
+    return puntos
 
 
 def primer_requerimiento(chicago, number_taxis, number_viajes):

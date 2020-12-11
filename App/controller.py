@@ -111,7 +111,7 @@ def segundo_requerimiento_primera_consulta(analyzer, number_taxis, initialDate):
 def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):
     initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
     finalDate = datetime.datetime.strptime(finalDate, '%Y-%m-%d')
-    return model.segundo_requerimiento(analyzer, number_taxis, initialDate.date(),  finalDate.date())
+    return model.segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate.date(),  finalDate.date())
 
 
 def cuarta_consulta(analyzer, time, id1):
