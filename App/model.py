@@ -210,7 +210,17 @@ def segundo_requerimiento_primera_consulta(chicago, number_taxis, initialDate):
         while it.hasNext(iterador):
             name_taxi = it.next(iterador)
             pareja_taxi = m.get(date_value['value'], name_taxi)
-            puntaje = funcion_auxiliar(pareja_taxi['value'])
+            #puntaje = funcion_auxiliar(pareja_taxi['value'])
+            total_viajes = lt.size(pareja_taxi['value'])
+            suma_pago = 0.0
+            suma_millas = 0.0
+            i = 1
+            while i <= total_viajes:
+                primero = lt.removeFirst(pareja_taxi['value'])
+                suma_pago += float(primero['trip_total'])
+                suma_millas += float((primero['trip_miles']))
+                i += 1
+            puntaje = ((suma_millas/suma_pago)*total_viajes)
             m.put(tax, puntaje, name_taxi)
             mi.insert(cola_prioridad_taxis, puntaje)
         # WHILE PARA TAXIS
@@ -243,7 +253,17 @@ def segundo_requerimiento_segunda_consulta(chicago, number_taxis, initialDate,  
                 name_taxi = it.next(ite)
                 par_taxi = m.get(pareja_taxi['value'], name_taxi)
                 #total_viajes = lt.size(par_taxi['value'])
-                puntuacion = funcion_auxiliar(par_taxi['value'])
+                total_viajes = lt.size(par_taxi['value'])
+                suma_pago = 0.0
+                suma_millas = 0.0
+                i = 1
+                while i <= total_viajes:
+                    primero = lt.removeFirst(par_taxi['value'])
+                    suma_pago += float(primero['trip_total'])
+                    suma_millas += float((primero['trip_miles']))
+                    i += 1
+                puntuacion = ((suma_millas/suma_pago)*total_viajes)
+                #puntuacion = funcion_auxiliar(par_taxi['value'])
                 if (m.contains(date_total, name_taxi) == False):
                     m.put(date_total, name_taxi, puntuacion)
                 else:
@@ -272,20 +292,6 @@ def otra_auxiliar(mapa, number_taxis):
     ranking = auxiliar_requerimiento_uno_taxis(
         restantes, number_taxis, new_mapa)
     return ranking
-
-
-def funcion_auxiliar(lista):
-    total_viajes = lt.size(lista)
-    suma_pago = 0.0
-    suma_millas = 0.0
-    i = 1
-    while i <= total_viajes:
-        primero = lt.removeFirst(lista)
-        suma_pago += float(primero['trip_total'])
-        suma_millas += float((primero['trip_miles']))
-        i += 1
-    puntos = ((suma_millas/suma_pago)*total_viajes)
-    return puntos
 
 
 def primer_requerimiento(chicago, number_taxis, number_viajes):
