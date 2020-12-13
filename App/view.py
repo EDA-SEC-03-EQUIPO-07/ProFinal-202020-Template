@@ -53,9 +53,10 @@ def printMenu():
     print("*******************************************")
     print("Bienvenido")
     print("1- Inicializar Analizador")
-    print("2- Cargar información de buses de singapur")
+    print("2- Cargar información del servicio de taxis")
     print("3- Primer requerimiento ")
-    print("4- Segundo requerimiento")
+    print("4- Segundo requerimiento - primera consulta ")
+    print("5- Segundo requerimiento - segunda consulta ")
     print("0- Salir")
     print("*******************************************")
 
@@ -65,8 +66,7 @@ Menu principal
 """
 while True:
     printMenu()
-    inputs = input('Seleccione una opción para continuar\n>')
-
+    inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("\nInicializando....")
         # cont es el controlador que se usará de acá en adelante
@@ -79,23 +79,32 @@ while True:
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 3:
-        number_companies = input("Ingrese el numero de compañias ")
+        number_taxis = input("Ingrese el numero de compañias con más taxis ")
+        number_viajes = input("Ingrese el numero de compañias con más viajes ")
         value_1 = controller.primer_requerimiento(
-            cont, number_companies)
+            cont, number_taxis, number_viajes)
         executiontime = timeit.timeit(number=1)
         print("Los resultados son los siguientes " + str(value_1))
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 4:
-        number_taxis = input("Ingrese el de taxis ")
         date = input("Ingrese la fecha ")
-        value_2 = controller.segunda_consulta(cont, number_taxis, date)
+        number_taxis = input(
+            "Ingrese la cantidad de taxis con más puntos que desea conocer ")
+        value_2 = controller.segundo_requerimiento_primera_consulta(
+            cont, number_taxis, date)
         executiontime = timeit.timeit(number=1)
-        print("La información es la siguiente: " + str(value_2))
+        print("Los Taxis con más puntos en la fecha" +
+              str(date) + " son:" + str(value_2))
         print("Tiempo de ejecución: " + str(executiontime))
 
     elif int(inputs[0]) == 5:
-        value_3 = controller.tercera_consulta(cont)
+        initialDate = input("Ingrese la fecha de inicio ")
+        finalDate = input("Ingrese la fecha final ")
+        number_taxis_1 = input(
+            "Ingrese la cantidad de taxis con más puntos que desea conocer ")
+        value_3 = controller.segundo_requerimiento_segunda_consulta(
+            cont, number_taxis_1, initialDate,  finalDate)
         executiontime = timeit.timeit(number=1)
         print("La información es la siguiente: " + str(value_3))
         print("Tiempo de ejecución: " + str(executiontime))

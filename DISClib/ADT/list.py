@@ -36,6 +36,8 @@ assert config
   sencilla, doble o como un arreglo
 """
 
+# 'SINGLE_LINKED'
+
 
 def newList(datastructure='SINGLE_LINKED', cmpfunction=None):
     """Crea una lista vacia

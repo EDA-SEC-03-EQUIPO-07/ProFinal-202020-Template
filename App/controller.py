@@ -26,6 +26,7 @@
 
 import config as cf
 from App import model
+import datetime
 import csv
 
 """
@@ -98,12 +99,19 @@ def connectedComponents(analyzer, id1, id2):
     return model.connectedComponents(analyzer, id1, id2)
 
 
-def primer_requerimiento(analyzer, number_companies):
-    return model.primer_requerimiento(analyzer, number_companies)
+def primer_requerimiento(analyzer, number_taxis, number_viajes):
+    return model.primer_requerimiento(analyzer, number_taxis, number_viajes)
 
 
-def segundo_requerimiento(analyzer, number_taxis, date):
-    return model.segundo_requerimiento(analyzer, number_taxis, date)
+def segundo_requerimiento_primera_consulta(analyzer, number_taxis_1, initialDate):
+    initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
+    return model.segundo_requerimiento_primera_consulta(analyzer, number_taxis_1, initialDate.date())
+
+
+def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate,  finalDate):
+    initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
+    finalDate = datetime.datetime.strptime(finalDate, '%Y-%m-%d')
+    return model.segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate.date(),  finalDate.date())
 
 
 def cuarta_consulta(analyzer, time, id1):
