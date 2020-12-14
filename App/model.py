@@ -64,11 +64,10 @@ def newAnalyzer():
             'name_taxi': None,
             'travel': None,
             'taxi': None,
-            'date': None
+            'date': None,
+            'map_graph': None
         }
 
-        # chicago['companies'] = om.newMap(omaptype='RBT',
-        #                        comparefunction=compareroutes)
         chicago['date'] = om.newMap(omaptype='RBT',
                                     comparefunction=compareroutes)
         chicago['travel'] = m.newMap(numelements=100,
@@ -80,10 +79,9 @@ def newAnalyzer():
         chicago['name_taxi'] = m.newMap(numelements=5000,
                                         maptype='PROBING',
                                         comparefunction=compareOffenses)
-        # chicago['graph'] = gr.newGraph(datastructure='ADJ_LIST',
-        #                              directed=True,
-        #                             size=1000,
-        #                            comparefunction=compareStopIds)
+        chicago['map_graph'] = m.newMap(numelements=200,
+                                        maptype='CHAINING',
+                                        comparefunction=compareStopIds)
         return chicago
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -100,6 +98,13 @@ def addTrip(chicago, trip):
     add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip)
     add_companies_taxi(chicago, company, taxi)
     add_companies_viaje(chicago, company, viaje)
+
+    start_community_area = trip["pickup_community_area"]
+    end_community_area = trip["dropoff_community_area"]
+    if start_community_area != end_community_area:
+        seconds = trip["trip_seconds"]
+        start_trip_hour = trip["trip_start_timestamp"]
+        add_graph_trip(chicago, start_community_area, end_community_area, seconds, start_trip_hour)
 
 
 def add_date_taxis(chicago, total_dinero, total_millas, date, taxi, trip):
@@ -191,6 +196,69 @@ def add_companies_viaje(chicago, company, viaje):
         par_viaje = m.get(chicago['travel'], company)
         par_viaje['value'] += 1
 
+
+def add_graph_trip(chicago, startstation, endstation, totaltime, datetime):
+    start_trip_time = get_hour(datetime)
+    present_community_area_map = m.contains(chicago['map_graph'], start_trip_time)
+
+    if present_community_area_map:
+        community_area_graph = m.get(chicago['map_graph'], start_trip_time)["value"]
+
+    else:
+        community_area_graph = gr.newGraph(datastructure='ADJ_LIST',
+                                            directed=True,
+                                            size=400,
+                                            comparefunction=compareStopIds)
+
+    addStation(community_area_graph, startstation)
+    addStation(community_area_graph, endstation)
+    addConnection(community_area_graph, startstation, endstation, totaltime)
+
+    m.put(chicago['map_graph'],start_trip_time,community_area_graph)
+
+
+def addConnection(chicago, origin, destination, duration):
+    """
+    Adiciona un arco entre dos estaciones
+    """
+    edge = gr.getEdge(chicago, origin, destination)
+    if edge is None:
+        if duration != '':
+            time_duration = float(duration)
+        else:
+            time_duration = 0.0
+        gr.addEdge(chicago, origin, destination, time_duration)
+    else:
+        peso = edge['weight']
+        if duration != '':
+            edge['weight'] = (peso+float(duration))/2
+        else:
+            edge['weight'] = float(peso)
+    return chicago
+
+
+def addStation(chicago, stationid):
+    if not gr.containsVertex(chicago, stationid):
+        gr.insertVertex(chicago, stationid)
+    return chicago
+
+
+def get_hour(datetime):
+    date, time = getDateTimeTaxiTrip(datetime)
+
+    minute = str(time.minute)
+
+    if int(minute) == 0:
+        minute = "0"+minute
+
+    hour = str(time.hour)
+
+    if int(hour) < 10:
+        hour = "0"+hour
+
+    franja_horaria = hour+":"+minute
+
+    return franja_horaria
 # ==============================
 # Funciones de consulta
 # ==============================
@@ -378,6 +446,54 @@ def auxiliar_requerimiento_uno_viajes(cola, number_viajes, tra):
     return re
 
 
+def tercer_requerimiento(chicago, initialArea, finalArea, initialHour, finalHour):
+    start_hour = initialHour
+    rutas = None
+    tiempo = 86400
+    best_hour = ""
+
+    while start_hour <= finalHour:
+        print(start_hour)
+        if m.contains(chicago["map_graph"], str(start_hour)):
+            print('HOLAAAAAAAAAAAAAAAAAAAAAaaa')
+            map_graph = m.get(chicago["map_graph"], str(start_hour))["value"]
+            if gr.containsVertex(map_graph,initialArea):
+                dijk_graph = djk.Dijkstra(map_graph, initialArea)
+                t = djk.distTo(dijk_graph, finalArea)
+
+                if t < tiempo:
+                    rutas = djk.pathTo(dijk_graph, finalArea)
+                    tiempo = t
+                    best_hour = start_hour
+        
+        start_hour = get_next_hour(start_hour)
+
+
+    return best_hour, rutas, tiempo
+
+
+def get_next_hour(datetime):
+    hour = datetime.split(":")[0]
+    minute = datetime.split(":")[1]
+
+    if minute == "00":
+        minute = "15"
+    elif minute == "15":
+        minute = "30"
+    elif minute == "30":
+        minute = "45"
+    elif minute == "45":
+        if int(hour)+1 < 10:
+            hour = "0"+str(int(hour)+1)
+        else:
+            hour = str(int(hour)+1)
+        minute = "00"
+
+
+    next_hour = hour+":"+minute
+    return next_hour
+
+
 # ==============================
 # Funciones Helper
 # ==============================
@@ -396,6 +512,27 @@ def sameCC(sc, station1, station2):
     return scc.stronglyConnected(sc, station1, station2)
 
 
+def getDateTimeTaxiTrip(taxitrip):
+
+    """
+
+    Recibe la informacion de un servicio de taxi leido del archivo de datos (parametro).
+
+    Retorna de forma separada la fecha (date) y el tiempo (time) del dato 'trip_start_timestamp'
+
+    Los datos date se pueden comparar con <, >, <=, >=, ==, !=
+
+    Los datos time se pueden comparar con <, >, <=, >=, ==, !=
+
+    """
+
+    tripstartdate = taxitrip
+
+    taxitripdatetime = datetime.datetime.strptime(tripstartdate, '%Y-%m-%dT%H:%M:%S.%f')
+
+    return taxitripdatetime.date(), taxitripdatetime.time()
+
+    
 # ==============================
 # Funciones de Comparacion
 # ==============================

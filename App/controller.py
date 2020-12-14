@@ -116,3 +116,6 @@ def segundo_requerimiento_segunda_consulta(analyzer, number_taxis, initialDate, 
 
 def cuarta_consulta(analyzer, time, id1):
     return model.cuarta_consulta(analyzer, time, id1)
+
+def tercer_requerimiento(analyzer, initialArea, finalArea, initialHour, finalHour):
+    return model.tercer_requerimiento(analyzer, initialArea, finalArea, initialHour, finalHour)
