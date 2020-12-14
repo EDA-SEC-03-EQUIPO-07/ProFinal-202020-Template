@@ -453,9 +453,7 @@ def tercer_requerimiento(chicago, initialArea, finalArea, initialHour, finalHour
     best_hour = ""
 
     while start_hour <= finalHour:
-        print(start_hour)
         if m.contains(chicago["map_graph"], str(start_hour)):
-            print('HOLAAAAAAAAAAAAAAAAAAAAAaaa')
             map_graph = m.get(chicago["map_graph"], str(start_hour))["value"]
             if gr.containsVertex(map_graph,initialArea):
                 dijk_graph = djk.Dijkstra(map_graph, initialArea)
