@@ -57,6 +57,7 @@ def printMenu():
     print("3- Primer requerimiento ")
     print("4- Segundo requerimiento - primera consulta ")
     print("5- Segundo requerimiento - segunda consulta ")
+    print("6- Tercer requerimiento ")
     print("0- Salir")
     print("*******************************************")
 
@@ -107,6 +108,20 @@ while True:
             cont, number_taxis_1, initialDate,  finalDate)
         executiontime = timeit.timeit(number=1)
         print("La información es la siguiente: " + str(value_3))
+        print("Tiempo de ejecución: " + str(executiontime))
+
+    elif int(inputs[0]) == 6:
+        initialArea = input("Ingrese la area de origen.\n")
+        finalArea = input("Ingrese la area destino.\n")
+        initialHour = input("Ingrese el rango de hora inicial para empezar el viaje.\n")
+        finalHour = input("Ingrese el rango de hora final para empezar el viaje.\n")
+        # Mejor horario para el inicio (HH:MM) para tener la menor duracion del viaje,
+        # la ruta, secuencia de community areas, y el tiempo de viaje estimado, en segundos.
+        horario, ruta, tiempo_estimado = controller.tercer_requerimiento(
+            cont, initialArea, finalArea, initialHour, finalHour)
+        executiontime = timeit.timeit(number=1)
+        print("La información es la siguiente:\n Mejor horario para iniciar: " + str(horario) + 
+        "\nRuta ha seguir:\n" + str(ruta) + "\n Tiempo de viaje estimado: " + str(tiempo_estimado))
         print("Tiempo de ejecución: " + str(executiontime))
 
     else:
